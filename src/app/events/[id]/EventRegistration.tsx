@@ -6,22 +6,28 @@ import { useToast } from "@/components/ui/use-toast";
 import socket from "@/lib/socket";
 
 type EventRegistrationProps = {
-  ticketsAvailable: boolean;
   eventId: string;
   currentAttendees: number;
+  seatsTotal: number;
+  isBooked: boolean;
 };
 
 export default function EventRegistration({
-  ticketsAvailable,
   eventId,
   currentAttendees,
+  seatsTotal,
+  isBooked,
 }: EventRegistrationProps) {
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [attendees, setAttendees] = useState(currentAttendees);
+  const [seatsAvailable, setSeatsAvailable] = useState(
+    seatsTotal - currentAttendees
+  );
+  const [hasBooked, setHasBooked] = useState(isBooked);
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  const handleRegister = async () => {
+  const handleBooking = async () => {
     if (!isAuthenticated) {
       toast({
         variant: "destructive",
@@ -32,38 +38,54 @@ export default function EventRegistration({
     }
 
     try {
-      setIsRegistering(true);
+      setIsProcessing(true);
+      const method = hasBooked ? "DELETE" : "POST";
       const response = await fetch(`/api/events/${eventId}/book`, {
-        method: "POST",
+        method,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      if (!response.ok) throw new Error("Booking failed");
+      if (!response.ok)
+        throw new Error(hasBooked ? "Unbooking failed" : "Booking failed");
+
+      const data = await response.json();
+      setHasBooked(!hasBooked);
+      setAttendees(data.attendees);
+      setSeatsAvailable(data.seatsAvailable);
 
       toast({
         title: "Success",
-        description: "Event booked successfully!",
+        description: hasBooked
+          ? "Event unbooked successfully!"
+          : "Event booked successfully!",
       });
-
-      // Socket will handle the attendee count update
     } catch (error) {
-      console.error("Error booking event:", error);
+      console.error("Booking error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to book event. Please try again.",
+        description: `Failed to ${
+          hasBooked ? "unbook" : "book"
+        } event. Please try again.`,
       });
     } finally {
-      setIsRegistering(false);
+      setIsProcessing(false);
     }
   };
 
-  // Listen for socket updates
   useEffect(() => {
-    socket.on("attendeeUpdate", ({ eventId: updatedEventId, count }) => {
-      if (eventId === updatedEventId) {
-        setAttendees(count);
+    socket.on(
+      "attendeeUpdate",
+      ({ eventId: updatedEventId, count, seatsAvailable: availableSeats }) => {
+        if (eventId === updatedEventId) {
+          setAttendees(count);
+          setSeatsAvailable(availableSeats);
+        }
       }
-    });
+    );
 
     return () => {
       socket.off("attendeeUpdate");
@@ -72,20 +94,34 @@ export default function EventRegistration({
 
   return (
     <>
-      <div className="mb-4 text-center">
+      <div className="mb-4 text-center space-y-2">
         <p className="text-sm text-gray-600">Current Attendees: {attendees}</p>
+        <p className="text-sm text-gray-600">
+          Seats Available: {seatsAvailable}
+        </p>
       </div>
-      {ticketsAvailable ? (
+      {seatsAvailable > 0 || hasBooked ? (
         <button
-          onClick={handleRegister}
-          disabled={isRegistering}
-          className="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50"
+          onClick={handleBooking}
+          disabled={isProcessing}
+          className={`w-full px-6 py-3 rounded-md transition-colors font-semibold disabled:opacity-50 
+            ${
+              hasBooked
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
         >
-          {isRegistering ? "Registering..." : "Register Now"}
+          {isProcessing
+            ? hasBooked
+              ? "Unbooking..."
+              : "Booking..."
+            : hasBooked
+            ? "Cancel Booking"
+            : "Book Event"}
         </button>
       ) : (
         <div className="text-center p-3 bg-gray-100 rounded-md">
-          <p className="text-gray-600 font-semibold">Registration Closed</p>
+          <p className="text-gray-600 font-semibold">Event Fully Booked</p>
         </div>
       )}
     </>

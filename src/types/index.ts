@@ -16,7 +16,7 @@ export interface Event {
   imageUrl: string; // note: using imageUrl for consistency with backend
   category: string;
   organizer: User;
-  attendees: User[];
+  attendees: string[];
   seatsTotal: number;
   bookedSeats: number;
   createdAt: Date;

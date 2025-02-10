@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { notFound, useParams } from "next/navigation";
 import { CldImage } from "next-cloudinary";
 import EventRegistration from "./EventRegistration";
 import { getEvent } from "./getEvent";
 import { Event } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 // Move date formatting to a separate function
 const formatDate = (date: string) => {
@@ -17,20 +18,17 @@ const formatDate = (date: string) => {
   });
 };
 
-export default function EventPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function EventPage() {
+  const params = useParams();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   // Add state for formatted date to avoid hydration mismatch
   const [formattedDate, setFormattedDate] = useState<string>("");
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchEvent = async () => {
-      const data = await getEvent(resolvedParams.id);
+      const data = await getEvent(params.id as string);
       setEvent(data);
       if (data?.date) {
         setFormattedDate(formatDate(data.date));
@@ -38,7 +36,7 @@ export default function EventPage({
       setLoading(false);
     };
     fetchEvent();
-  }, [resolvedParams.id]);
+  }, [params.id]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -143,9 +141,10 @@ export default function EventPage({
               </div>
 
               <EventRegistration
-                ticketsAvailable={event.seatsTotal > event.bookedSeats}
                 eventId={event._id}
                 currentAttendees={event.attendees.length}
+                seatsTotal={event.seatsTotal}
+                isBooked={event.attendees.includes(user?.id || "")}
               />
             </div>
           </div>

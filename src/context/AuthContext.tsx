@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  user: { id: string; name: string; email: string } | null;
   userRole: "admin" | "user" | "guest";
   isLoaded: boolean;
   login: (data: { token: string; role: "admin" | "user" }) => void;
@@ -13,6 +14,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  user: null,
   userRole: "guest",
   isLoaded: false,
   login: () => {},
@@ -63,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, userRole, isLoaded, login, logout, guestLogin }}
+      value={{ isAuthenticated, user: null, userRole, isLoaded, login, logout, guestLogin }}
     >
       {children}
     </AuthContext.Provider>
