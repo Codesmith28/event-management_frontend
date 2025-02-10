@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { CldUploadWidget } from 'next-cloudinary';
 import { cloudinaryConfig } from '@/config/cloudinary';
+import { SocketProvider } from "@/contexts/SocketContext";
 
 export default function RootLayout({
   children,
@@ -19,11 +20,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
+        <SocketProvider>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </AuthProvider>
+        </SocketProvider>
         <Toaster />
       </body>
     </html>

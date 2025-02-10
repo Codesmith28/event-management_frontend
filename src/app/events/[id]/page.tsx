@@ -7,6 +7,7 @@ import EventRegistration from "./EventRegistration";
 import { getEvent } from "./getEvent";
 import { Event } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import socket from "@/lib/socket";
 
 // Move date formatting to a separate function
 const formatDate = (date: string) => {
@@ -37,6 +38,23 @@ export default function EventPage() {
     };
     fetchEvent();
   }, [params.id]);
+
+  // Add socket event listener for real-time updates
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("eventUpdated", (updatedEvent) => {
+      if (updatedEvent._id === event?._id) {
+        setEvent(updatedEvent);
+        setFormattedDate(new Date(updatedEvent.date).toLocaleDateString());
+      }
+    });
+
+    return () => {
+      socket.off("eventUpdated");
+      socket.disconnect();
+    };
+  }, [event?._id]);
 
   if (loading) {
     return <div>Loading...</div>;

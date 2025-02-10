@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/forms/EventForm";
+import { socket } from "@/lib/socket";
 
 export default function AdminEventPage() {
   const params = useParams();
@@ -48,6 +49,21 @@ export default function AdminEventPage() {
   useEffect(() => {
     fetchEvent();
   }, [params.id]);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("eventUpdated", (updatedEvent) => {
+      if (updatedEvent._id === event?._id) {
+        setEvent(updatedEvent);
+      }
+    });
+
+    return () => {
+      socket.off("eventUpdated");
+      socket.disconnect();
+    };
+  }, [event?._id]);
 
   const handleEditSuccess = () => {
     setIsEditModalOpen(false);

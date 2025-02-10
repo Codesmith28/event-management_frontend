@@ -18,6 +18,7 @@ import { Event } from "@/types";
 import { EventFilter } from "@/components/events/EventFilter";
 import { EventList } from "@/components/events/EventList";
 import { useToast } from "@/components/ui/use-toast";
+import { useSocket } from "@/contexts/SocketContext";
 
 const initialFilters = {
   title: "",
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
   const { isLoaded, userRole } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const socket = useSocket();
 
   // Redirect non-admin users to the public dashboard
   useEffect(() => {
@@ -71,6 +73,33 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("eventCreated", (newEvent) => {
+      setEvents((prev) => [...prev, newEvent]);
+    });
+
+    socket.on("eventUpdated", (updatedEvent) => {
+      setEvents((prev) =>
+        prev.map((event) =>
+          event._id === updatedEvent._id ? updatedEvent : event
+        )
+      );
+    });
+
+    socket.on("eventDeleted", ({ id }) => {
+      setEvents((prev) => prev.filter((event) => event._id !== id));
+    });
+
+    return () => {
+      socket.off("eventCreated");
+      socket.off("eventUpdated");
+      socket.off("eventDeleted");
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     fetchEvents();
