@@ -13,12 +13,11 @@ export interface Event {
   description: string;
   date: Date;
   location: string;
-  imageUrl: string; // note: using imageUrl for consistency with backend
+  imageUrl: string;
   category: string;
-  organizer: User;
+  organizer: User | string;
   attendees: string[];
   seatsTotal: number;
-  bookedSeats: number;
   createdAt: Date;
   updatedAt: Date;
 }

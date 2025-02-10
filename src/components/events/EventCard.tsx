@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 // import Image from "next/image";
 
 import { CldImage } from "next-cloudinary";
@@ -27,13 +27,14 @@ export const EventCard: React.FC<EventCardProps> = ({
   onEdit,
   onClick,
 }) => {
-  // Get user role from auth context
   const { userRole } = useAuth();
+  const [formattedDate, setFormattedDate] = useState<string>("");
+  const seatsAvailable = event.seatsTotal - event.attendees.length;
 
-  // Formatting event details
-  const eventDate = new Date(event.date);
-  const formattedDate = eventDate.toLocaleString();
-  const seatsAvailable = event.seatsTotal - event.bookedSeats;
+  useEffect(() => {
+    const date = new Date(event.date);
+    setFormattedDate(date.toLocaleString());
+  }, [event.date]);
 
   // For guests, visually gray out the card and disable pointer events
   const isGuest = userRole === "guest";
