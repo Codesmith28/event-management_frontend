@@ -1,14 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent } from "react";
-import axios from "axios";
-import { Event } from "@/types";
+import React, { useState, ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-
-import { CldImage } from "next-cloudinary";
 
 const uploadImage = async (imageFile: File) => {
   try {
@@ -66,27 +62,14 @@ const createEvent = async (eventData: {
 };
 
 const AdminEvents: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState({
     title: "",
     date: "",
     description: "",
     imageUrl: "",
+    category: "", // Add category field
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get("/api/events");
-      setEvents(response.data);
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
-    }
-  };
 
   // Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +87,7 @@ const AdminEvents: React.FC = () => {
         description: newEvent.description,
         date: newEvent.date,
         imageUrl: imageUrl,
-        category: "Entertainment",
+        category: newEvent.category, // Include category in payload
       };
 
       await createEvent(payload);
@@ -113,29 +96,11 @@ const AdminEvents: React.FC = () => {
         date: "",
         description: "",
         imageUrl: "",
+        category: "", // Reset category
       });
       setSelectedFile(null);
-      fetchEvents();
     } catch (error) {
       console.error("Failed to create event:", error);
-    }
-  };
-
-  const updateEvent = async (id: string, updatedEvent: Partial<Event>) => {
-    try {
-      await axios.put(`/api/events/${id}`, updatedEvent);
-      fetchEvents();
-    } catch (error) {
-      console.error("Failed to update event:", error);
-    }
-  };
-
-  const deleteEvent = async (id: string) => {
-    try {
-      await axios.delete(`/api/events/${id}`);
-      fetchEvents();
-    } catch (error) {
-      console.error("Failed to delete event:", error);
     }
   };
 
@@ -196,42 +161,26 @@ const AdminEvents: React.FC = () => {
             className="w-full"
           />
         </div>
+        <div>
+          <Label htmlFor="event-category" className="mb-1 block">
+            Category
+          </Label>
+          <select
+            id="event-category"
+            value={newEvent.category}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, category: e.target.value })
+            }
+            className="w-full border rounded-md p-2"
+          >
+            <option value="">Select Category</option>
+            <option value="conference">Conference</option>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
+          </select>
+        </div>
         <Button onClick={handleCreateEvent}>Create Event</Button>
       </div>
-      <ul className="space-y-4">
-        {events.map((event) => (
-          <li key={event._id} className="border p-4 rounded-md">
-            <h2 className="text-xl font-semibold">{event.title}</h2>
-            <p className="text-sm text-gray-600">
-              {new Date(event.date).toLocaleDateString()}
-            </p>
-            {event.imageUrl && (
-              <CldImage
-                src={event.imageUrl}
-                alt="Event thumbnail"
-                className="mt-2 w-32 h-32 object-cover"
-              />
-            )}
-            <p className="mt-2">{event.description}</p>
-            <div className="mt-4 flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  updateEvent(event._id, { ...event, title: "Updated Title" })
-                }
-              >
-                Update
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => deleteEvent(event._id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

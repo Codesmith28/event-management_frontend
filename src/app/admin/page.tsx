@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import AdminEvents from "./events";
+import AdminEvents from "./createEvents";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {

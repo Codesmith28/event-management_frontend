@@ -42,6 +42,24 @@ export const EventCard: React.FC<EventCardProps> = ({
     ? "opacity-50 pointer-events-none"
     : "cursor-pointer";
 
+  // const updateEvent = async (id: string, updatedEvent: Partial<Event>) => {
+  //   try {
+  //     await axios.put(`/api/events/${id}`, updatedEvent);
+  //     fetchEvents();
+  //   } catch (error) {
+  //     console.error("Failed to update event:", error);
+  //   }
+  // };
+
+  // const deleteEvent = async (id: string) => {
+  //   try {
+  //     await axios.delete(`/api/events/${id}`);
+  //     fetchEvents();
+  //   } catch (error) {
+  //     console.error("Failed to delete event:", error);
+  //   }
+  // };
+
   return (
     <Card
       className={`mb-4 ${cardClassName}`}
@@ -52,7 +70,8 @@ export const EventCard: React.FC<EventCardProps> = ({
           <CldImage
             src={event.imageUrl}
             alt={event.title}
-            fill
+            width={100}
+            height={100}
             className="object-cover rounded-t-lg"
           />
         </div>
