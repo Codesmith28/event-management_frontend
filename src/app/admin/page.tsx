@@ -18,10 +18,19 @@ import { useAuth } from "@/context/AuthContext";
 import { Event } from "@/types";
 import { EventFilter } from "@/components/events/EventFilter";
 import { EventList } from "@/components/events/EventList";
+import { useToast } from "@/components/ui/use-toast";
+
+const initialFilters = {
+  title: "",
+  category: "",
+  startDate: "",
+  endDate: "",
+};
 
 export default function AdminDashboard() {
   const { isLoaded, userRole } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   // Redirect non-admin users to the public dashboard
   useEffect(() => {
@@ -31,39 +40,46 @@ export default function AdminDashboard() {
   }, [isLoaded, userRole, router]);
 
   // State for filtering and listing events in the "dashboard" tab
-  const [filters, setFilters] = useState({
-    title: "",
-    category: "",
-    startDate: "",
-    endDate: "",
-  });
+  const [filters, setFilters] = useState(initialFilters);
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
-  // Fetch events whenever filters change
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filters.title) params.append("title", filters.title);
-        if (filters.category) params.append("category", filters.category);
-        if (filters.startDate) params.append("startDate", filters.startDate);
-        if (filters.endDate) params.append("endDate", filters.endDate);
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.title) params.append("title", filters.title);
+      if (filters.category) params.append("category", filters.category);
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
 
-        const response = await axios.get("/api/events", { params });
-        setEvents(response.data);
-        setError("");
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-        setError("Failed to fetch events");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const response = await fetch(`/api/events?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch events");
+      
+      const data = await response.json();
+      setEvents(data);
+      setError("");
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+      setError("Failed to fetch events");
+      toast({
+        title: "Error",
+        description: "Failed to fetch events",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
   }, [filters]);
+
+  const handleResetFilters = () => {
+    setFilters(initialFilters);
+  };
 
   // Handle event click (for example, open a modal or navigate to event details)
   const handleEventClick = (event: Event) => {
@@ -103,7 +119,11 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EventFilter filters={filters} setFilters={setFilters} />
+                <EventFilter
+                  filters={filters}
+                  setFilters={setFilters}
+                  onReset={handleResetFilters}
+                />
                 {loading && <p>Loading events...</p>}
                 {error && <p className="text-red-500">{error}</p>}
                 <EventList events={events} onEventClick={handleEventClick} />

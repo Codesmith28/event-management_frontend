@@ -23,7 +23,15 @@ export default function DashboardPage() {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await fetch("/api/events");
+      const params = new URLSearchParams();
+      if (filters.title) params.append("title", filters.title);
+      if (filters.category) params.append("category", filters.category);
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+
+      const response = await fetch(`/api/events?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch events");
+      
       const data = await response.json();
       setEvents(data);
     } catch (error) {
@@ -34,7 +42,7 @@ export default function DashboardPage() {
         description: "Failed to fetch events. Please try again later.",
       });
     }
-  }, [toast]);
+  }, [filters, toast]);
 
   useEffect(() => {
     fetchEvents();
@@ -115,6 +123,15 @@ export default function DashboardPage() {
         description: "Failed to book event. Please try again.",
       });
     }
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      title: "",
+      category: "",
+      startDate: "",
+      endDate: "",
+    });
   };
 
   return (

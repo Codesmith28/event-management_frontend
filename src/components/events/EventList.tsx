@@ -11,6 +11,7 @@ interface EventListProps {
   onEventClick?: (event: Event) => void;
   onUpdate?: () => void;
   readOnly?: boolean;
+  loading?: boolean;
 }
 
 export function EventList({
@@ -18,12 +19,21 @@ export function EventList({
   onEventClick,
   onUpdate,
   readOnly = false,
+  loading = false,
 }: EventListProps) {
   const { userRole } = useAuth();
   const isAdmin = userRole === "admin";
 
   // Ensure events is an array
   const eventArray = Array.isArray(events) ? events : [];
+
+  if (loading) {
+    return (
+      <div className="col-span-full text-center py-8 text-gray-500">
+        Loading events...
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 p-4">
@@ -46,7 +56,7 @@ export function EventList({
           )}
         </div>
       ))}
-      {eventArray.length === 0 && (
+      {eventArray.length === 0 && !loading && (
         <div className="col-span-full text-center py-8 text-gray-500">
           No events found
         </div>

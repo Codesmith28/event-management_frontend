@@ -38,20 +38,37 @@ async function getUserIdFromToken(token: string): Promise<string> {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/events`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await response.json();
-    return NextResponse.json(data);
+    const { searchParams } = new URL(request.url);
+    const title = searchParams.get("title");
+    const category = searchParams.get("category");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+
+    // Construct the backend API URL with filters
+    const params = new URLSearchParams();
+    if (title) params.append("title", title);
+    if (category) params.append("category", category);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/events?${params.toString()}`;
+    
+    const response = await fetch(backendUrl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch events");
+    }
+
+    const events = await response.json();
+    return NextResponse.json(events);
   } catch (error) {
-    console.error(error);
+    console.error("Error in events API route:", error);
     return NextResponse.json(
       { error: "Failed to fetch events" },
       { status: 500 }
