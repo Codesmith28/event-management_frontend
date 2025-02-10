@@ -63,18 +63,23 @@ export const AdminEventCard: React.FC<AdminEventCardProps> = ({
                   <Edit className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl w-[90vw]" onClick={(e) => e.stopPropagation()}>
-                <DialogHeader>
+              <DialogContent 
+                className="max-w-4xl w-[90vw] px-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DialogHeader className="pb-4">
                   <DialogTitle>Edit Event: {event.title}</DialogTitle>
                 </DialogHeader>
-                <EventForm
-                  event={event}
-                  onSuccess={() => {
-                    setIsEditModalOpen(false);
-                    onUpdate();
-                  }}
-                  isEditing={true}
-                />
+                <div className="mt-2">
+                  <EventForm
+                    event={event}
+                    onSuccess={() => {
+                      setIsEditModalOpen(false);
+                      onUpdate();
+                    }}
+                    isEditing={true}
+                  />
+                </div>
               </DialogContent>
             </Dialog>
           </div>

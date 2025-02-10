@@ -122,17 +122,17 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-4">
-          <div className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Event Title" {...field} className="w-full" />
+                    <Input placeholder="Event Title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,10 +143,10 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Date</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} className="w-full" />
+                    <Input type="datetime-local" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,10 +157,10 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
               control={form.control}
               name="time"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Time</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full" />
+                    <Input type="time" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,10 +171,10 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
               control={form.control}
               name="location"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="Event Location" {...field} className="w-full" />
+                    <Input placeholder="Event Location" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,12 +182,12 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Category</FormLabel>
                   <FormControl>
                     <select
@@ -213,7 +213,7 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
               control={form.control}
               name="seatsTotal"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Total Seats</FormLabel>
                   <FormControl>
                     <Input 
@@ -233,7 +233,7 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="max-w-sm">
                   <FormLabel className="font-semibold">Description</FormLabel>
                   <FormControl>
                     <Textarea 
@@ -300,7 +300,7 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
           </div>
         </div>
 
-        <div className="flex justify-end items-center gap-4 pt-4 border-t mt-6">
+        <div className="flex justify-end items-center gap-3 pt-3 border-t mt-4">
           <Button
             type="button"
             variant="outline"

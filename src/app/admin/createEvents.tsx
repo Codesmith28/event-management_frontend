@@ -83,7 +83,7 @@ const uploadImage = async (file: File): Promise<string> => {
 
 const AdminEvents: React.FC = () => {
   const { toast } = useToast();
-  const [error, setError] = useState<string>("");
+  const [, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
@@ -194,34 +194,51 @@ const AdminEvents: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      <Card>
+    <div className=" mx-auto">
+      <Card className="w-full mx-auto">
         <CardHeader>
           <CardTitle>Create New Event</CardTitle>
           <CardDescription>
-            Fill in the details below to create a new event.
+            Fill in the details to create a new event.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Title and Category in first row */}
+            <div className="space-y-2">
+              <Label htmlFor="event-title">Title *</Label>
+              <Input
+                id="event-title"
+                placeholder="Enter event title"
+                value={newEvent.title}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, title: e.target.value })
+                }
+              />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="event-title">Event Title *</Label>
-            <Input
-              id="event-title"
-              placeholder="Enter event title"
-              value={newEvent.title}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, title: e.target.value })
-              }
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-category">Category *</Label>
+              <Select
+                value={newEvent.category}
+                onValueChange={(value) =>
+                  setNewEvent({ ...newEvent, category: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="conference">Conference</SelectItem>
+                  <SelectItem value="workshop">Workshop</SelectItem>
+                  <SelectItem value="seminar">Seminar</SelectItem>
+                  <SelectItem value="networking">Networking</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
+            {/* Date and Time in second row */}
             <div className="space-y-2">
               <Label>Date *</Label>
               <Popover>
@@ -265,41 +282,38 @@ const AdminEvents: React.FC = () => {
                 }
               />
             </div>
+
+            {/* Location and Seats in third row */}
+            <div className="space-y-2">
+              <Label htmlFor="event-location">Location *</Label>
+              <Input
+                id="event-location"
+                placeholder="Enter event location"
+                value={newEvent.location}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, location: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-seats">Total Seats *</Label>
+              <Input
+                id="event-seats"
+                type="number"
+                min="1"
+                value={newEvent.seatsTotal}
+                onChange={(e) =>
+                  setNewEvent({
+                    ...newEvent,
+                    seatsTotal: parseInt(e.target.value, 10),
+                  })
+                }
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="event-location">Location *</Label>
-            <Input
-              id="event-location"
-              placeholder="Enter event location"
-              value={newEvent.location}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, location: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="event-category">Category *</Label>
-            <Select
-              value={newEvent.category}
-              onValueChange={(value) =>
-                setNewEvent({ ...newEvent, category: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="conference">Conference</SelectItem>
-                <SelectItem value="workshop">Workshop</SelectItem>
-                <SelectItem value="seminar">Seminar</SelectItem>
-                <SelectItem value="networking">Networking</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+          {/* Description full width */}
           <div className="space-y-2">
             <Label htmlFor="event-description">Description *</Label>
             <Textarea
@@ -313,28 +327,13 @@ const AdminEvents: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="event-seats">Total Seats *</Label>
-            <Input
-              id="event-seats"
-              type="number"
-              min="1"
-              value={newEvent.seatsTotal}
-              onChange={(e) =>
-                setNewEvent({
-                  ...newEvent,
-                  seatsTotal: parseInt(e.target.value, 10),
-                })
-              }
-            />
-          </div>
-
+          {/* Image upload full width */}
           <div className="space-y-2">
             <Label htmlFor="event-thumbnail">Event Thumbnail *</Label>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full sm:w-auto"
                 onClick={() => document.getElementById("file-upload")?.click()}
               >
                 <ImageIcon className="mr-2 h-4 w-4" />
@@ -346,19 +345,19 @@ const AdminEvents: React.FC = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="hidden"
-                required
               />
+              {selectedFile && (
+                <p className="text-sm text-muted-foreground">
+                  Selected: {selectedFile.name}
+                </p>
+              )}
             </div>
-            {selectedFile && (
-              <p className="text-sm text-muted-foreground">
-                Selected: {selectedFile.name}
-              </p>
-            )}
           </div>
         </CardContent>
+
         <CardFooter>
           <Button
-            className="w-full"
+            className="w-full sm:w-auto"
             onClick={handleCreateEvent}
             disabled={
               isSubmitting ||
@@ -375,7 +374,6 @@ const AdminEvents: React.FC = () => {
           </Button>
         </CardFooter>
       </Card>
-      <Toaster />
     </div>
   );
 };

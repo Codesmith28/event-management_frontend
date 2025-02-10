@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
       const response = await fetch(`/api/events?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch events");
-      
+
       const data = await response.json();
       setEvents(data);
       setError("");
@@ -132,17 +132,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="events">
-            <Card>
-              <CardHeader>
-                <CardTitle>Events Management</CardTitle>
-                <CardDescription>
-                  Create, edit, and manage all events
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AdminEvents />
-              </CardContent>
-            </Card>
+            <AdminEvents />
           </TabsContent>
         </Tabs>
       </div>
