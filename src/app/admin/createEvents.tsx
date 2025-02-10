@@ -1,13 +1,36 @@
 "use client";
 
 import React, { useState, ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, ImageIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { Event } from "@/types";
 
 const uploadImage = async (file: File): Promise<string> => {
@@ -59,9 +82,9 @@ const uploadImage = async (file: File): Promise<string> => {
 };
 
 const AdminEvents: React.FC = () => {
-  const router = useRouter();
   const { toast } = useToast();
   const [error, setError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
     date: new Date(),
@@ -77,15 +100,23 @@ const AdminEvents: React.FC = () => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
+      // Show preview filename
+      toast({
+        title: "File selected",
+        description: `Selected: ${e.target.files[0].name}`,
+      });
     }
   };
 
   const handleCreateEvent = async () => {
     try {
+      setIsSubmitting(true);
       setError("");
+
       if (
         !newEvent.title ||
         !newEvent.date ||
+        !newEvent.time ||
         !newEvent.description ||
         !newEvent.category ||
         !newEvent.location
@@ -126,6 +157,11 @@ const AdminEvents: React.FC = () => {
         throw new Error(errorData.message || "Failed to create event");
       }
 
+      toast({
+        title: "Success",
+        description: "Event created successfully!",
+      });
+
       // Reset form
       setNewEvent({
         title: "",
@@ -138,144 +174,142 @@ const AdminEvents: React.FC = () => {
         seatsTotal: 100,
       });
       setSelectedFile(null);
-
-      toast({
-        title: "Success",
-        description: "Event created successfully!",
-        variant: "default",
-      });
-
-      router.push("/admin/events");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to create event";
       setError(errorMessage);
-      console.error("Event creation error:", error);
-
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Create New Event</h1>
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        <div className="space-y-4 mb-8">
-          <div>
-            <Label htmlFor="event-title" className="mb-1 block">
-              Event Title
-            </Label>
+    <div className="container mx-auto p-6 max-w-2xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Event</CardTitle>
+          <CardDescription>
+            Fill in the details below to create a new event.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="event-title">Event Title *</Label>
             <Input
               id="event-title"
-              type="text"
-              placeholder="Event Title"
+              placeholder="Enter event title"
               value={newEvent.title}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, title: e.target.value })
               }
-              className="w-full"
             />
           </div>
-          <div>
-            <Label htmlFor="event-location" className="mb-1 block">
-              Location
-            </Label>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Date *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !newEvent.date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newEvent.date ? (
+                      format(newEvent.date, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={newEvent.date}
+                    onSelect={(date) =>
+                      setNewEvent({ ...newEvent, date: date || new Date() })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-time">Time *</Label>
+              <Input
+                id="event-time"
+                type="time"
+                value={newEvent.time}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, time: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-location">Location *</Label>
             <Input
               id="event-location"
-              type="text"
-              placeholder="Event Location"
+              placeholder="Enter event location"
               value={newEvent.location}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, location: e.target.value })
               }
-              className="w-full"
             />
           </div>
-          <div>
-            <Label htmlFor="event-date" className="mb-1 block">
-              Date
-            </Label>
-            <Input
-              id="event-date"
-              type="date"
-              value={(newEvent.date ?? new Date()).toISOString().split("T")[0]}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, date: new Date(e.target.value) })
+
+          <div className="space-y-2">
+            <Label htmlFor="event-category">Category *</Label>
+            <Select
+              value={newEvent.category}
+              onValueChange={(value) =>
+                setNewEvent({ ...newEvent, category: value })
               }
-              className="w-full"
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="conference">Conference</SelectItem>
+                <SelectItem value="workshop">Workshop</SelectItem>
+                <SelectItem value="seminar">Seminar</SelectItem>
+                <SelectItem value="networking">Networking</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <Label htmlFor="event-time" className="mb-1 block">
-              Time
-            </Label>
-            <Input
-              id="event-time"
-              type="time"
-              value={newEvent.time}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, time: e.target.value })
-              }
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="event-description" className="mb-1 block">
-              Description
-            </Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-description">Description *</Label>
             <Textarea
               id="event-description"
-              placeholder="Description"
+              placeholder="Enter event description"
               value={newEvent.description}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, description: e.target.value })
               }
-              className="w-full"
+              className="min-h-[100px]"
             />
           </div>
-          <div>
-            <Label htmlFor="event-thumbnail" className="mb-1 block">
-              Event Thumbnail
-            </Label>
-            <Input
-              id="event-thumbnail"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="event-category" className="mb-1 block">
-              Category
-            </Label>
-            <select
-              id="event-category"
-              value={newEvent.category}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, category: e.target.value })
-              }
-              className="w-full border rounded-md p-2"
-            >
-              <option value="">Select Category</option>
-              <option value="conference">Conference</option>
-              <option value="workshop">Workshop</option>
-              <option value="seminar">Seminar</option>
-            </select>
-          </div>
-          <div>
-            <Label htmlFor="event-seats" className="mb-1 block">
-              Total Seats
-            </Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-seats">Total Seats *</Label>
             <Input
               id="event-seats"
               type="number"
@@ -287,26 +321,55 @@ const AdminEvents: React.FC = () => {
                   seatsTotal: parseInt(e.target.value, 10),
                 })
               }
-              className="w-full"
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-thumbnail">Event Thumbnail</Label>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => document.getElementById("file-upload")?.click()}
+              >
+                <ImageIcon className="mr-2 h-4 w-4" />
+                {selectedFile ? "Change Image" : "Upload Image"}
+              </Button>
+              <Input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+            {selectedFile && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {selectedFile.name}
+              </p>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter>
           <Button
-            onClick={handleCreateEvent}
             className="w-full"
+            onClick={handleCreateEvent}
             disabled={
+              isSubmitting ||
               !newEvent.title ||
               !newEvent.date ||
+              !newEvent.time ||
               !newEvent.description ||
               !newEvent.category ||
               !newEvent.location
             }
           >
-            Create Event
+            {isSubmitting ? "Creating..." : "Create Event"}
           </Button>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
       <Toaster />
-    </>
+    </div>
   );
 };
 
