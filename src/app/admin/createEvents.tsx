@@ -119,9 +119,12 @@ const AdminEvents: React.FC = () => {
         !newEvent.time ||
         !newEvent.description ||
         !newEvent.category ||
-        !newEvent.location
+        !newEvent.location ||
+        !selectedFile
       ) {
-        throw new Error("Please fill in all required fields");
+        throw new Error(
+          "Please fill in all required fields and upload an image"
+        );
       }
 
       const token = localStorage.getItem("token");
@@ -157,9 +160,11 @@ const AdminEvents: React.FC = () => {
         throw new Error(errorData.message || "Failed to create event");
       }
 
+      const createdEvent = await response.json();
       toast({
-        title: "Success",
-        description: "Event created successfully!",
+        title: "Event Created Successfully",
+        description: `${createdEvent.title} has been created and is now live.`,
+        variant: "default",
       });
 
       // Reset form
@@ -325,7 +330,7 @@ const AdminEvents: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="event-thumbnail">Event Thumbnail</Label>
+            <Label htmlFor="event-thumbnail">Event Thumbnail *</Label>
             <div className="flex items-center space-x-4">
               <Button
                 variant="outline"
@@ -341,6 +346,7 @@ const AdminEvents: React.FC = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="hidden"
+                required
               />
             </div>
             {selectedFile && (
@@ -361,7 +367,8 @@ const AdminEvents: React.FC = () => {
               !newEvent.time ||
               !newEvent.description ||
               !newEvent.category ||
-              !newEvent.location
+              !newEvent.location ||
+              !selectedFile
             }
           >
             {isSubmitting ? "Creating..." : "Create Event"}
