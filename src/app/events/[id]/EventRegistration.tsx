@@ -19,9 +19,9 @@ export default function EventRegistration({
   isBooked,
 }: EventRegistrationProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [attendees, setAttendees] = useState(currentAttendees);
+  const [attendees, setAttendees] = useState(Number(currentAttendees) || 0);
   const [seatsAvailable, setSeatsAvailable] = useState(
-    seatsTotal - currentAttendees
+    Number(seatsTotal - currentAttendees) || 0
   );
   const [hasBooked, setHasBooked] = useState(isBooked);
   const { isAuthenticated } = useAuth();
@@ -81,8 +81,8 @@ export default function EventRegistration({
       "attendeeUpdate",
       ({ eventId: updatedEventId, count, seatsAvailable: availableSeats }) => {
         if (eventId === updatedEventId) {
-          setAttendees(count);
-          setSeatsAvailable(availableSeats);
+          setAttendees(Number(count) || 0);
+          setSeatsAvailable(Number(availableSeats) || 0);
         }
       }
     );

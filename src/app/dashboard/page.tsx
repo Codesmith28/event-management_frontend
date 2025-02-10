@@ -40,15 +40,42 @@ export default function DashboardPage() {
     fetchEvents();
     socket.connect();
 
-    socket.on("attendeeUpdate", ({ eventId, count }) => {
+    // Listen for all relevant event updates
+    socket.on("eventCreated", (event) => {
+      setEvents((prev) => [...prev, event]);
+    });
+
+    socket.on("eventUpdated", (updatedEvent) => {
       setEvents((prev) =>
         prev.map((event) =>
-          event._id === eventId ? { ...event, attendees: count } : event
+          event._id === updatedEvent._id ? updatedEvent : event
+        )
+      );
+    });
+
+    socket.on("eventDeleted", ({ id }) => {
+      setEvents((prev) => prev.filter((event) => event._id !== id));
+    });
+
+    socket.on("attendeeUpdate", ({ eventId, count, seatsAvailable }) => {
+      setEvents((prev) =>
+        prev.map((event) =>
+          event._id === eventId
+            ? {
+                ...event,
+                attendees: Array(count).fill('placeholder'), // This maintains the length
+                seatsAvailable: seatsAvailable
+              }
+            : event
         )
       );
     });
 
     return () => {
+      socket.off("eventCreated");
+      socket.off("eventUpdated");
+      socket.off("eventDeleted");
+      socket.off("attendeeUpdate");
       socket.disconnect();
     };
   }, [fetchEvents]);
