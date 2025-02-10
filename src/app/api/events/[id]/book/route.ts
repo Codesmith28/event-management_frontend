@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const headersList = headers();
-    const token = headersList.get("authorization");
+    const token = (await headersList).get("authorization");
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/events/${params.id}/book`,

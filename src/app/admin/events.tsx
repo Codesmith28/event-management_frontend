@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { Event } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,72 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+import { CldImage } from "next-cloudinary";
+
+const uploadImage = async (imageFile: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image");
+    }
+
+    const data = await response.json();
+    return data.url;
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    throw error;
+  }
+};
+
+const createEvent = async (eventData: {
+  title: string;
+  description: string;
+  date: string;
+  imageUrl: string;
+  category: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/events`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to create event");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to create event:", error);
+    throw error;
+  }
+};
+
 const AdminEvents: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState({
-    name: "",
+    title: "",
     date: "",
     description: "",
+    imageUrl: "",
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -29,9 +88,33 @@ const AdminEvents: React.FC = () => {
     }
   };
 
-  const createEvent = async () => {
+  // Handle file selection
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleCreateEvent = async () => {
     try {
-      await axios.post("/api/events", newEvent);
+      const imageUrl = selectedFile ? await uploadImage(selectedFile) : "";
+
+      const payload = {
+        title: newEvent.title,
+        description: newEvent.description,
+        date: newEvent.date,
+        imageUrl: imageUrl,
+        category: "Entertainment",
+      };
+
+      await createEvent(payload);
+      setNewEvent({
+        title: "",
+        date: "",
+        description: "",
+        imageUrl: "",
+      });
+      setSelectedFile(null);
       fetchEvents();
     } catch (error) {
       console.error("Failed to create event:", error);
@@ -61,15 +144,17 @@ const AdminEvents: React.FC = () => {
       <h1 className="text-2xl font-bold mb-4">Manage Events</h1>
       <div className="space-y-4 mb-8">
         <div>
-          <Label htmlFor="event-name" className="mb-1 block">
-            Event Name
+          <Label htmlFor="event-title" className="mb-1 block">
+            Event Title
           </Label>
           <Input
-            id="event-name"
+            id="event-title"
             type="text"
-            placeholder="Event Name"
-            value={newEvent.name}
-            onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })}
+            placeholder="Event Title"
+            value={newEvent.title}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, title: e.target.value })
+            }
             className="w-full"
           />
         </div>
@@ -99,7 +184,19 @@ const AdminEvents: React.FC = () => {
             className="w-full"
           />
         </div>
-        <Button onClick={createEvent}>Create Event</Button>
+        <div>
+          <Label htmlFor="event-thumbnail" className="mb-1 block">
+            Event Thumbnail
+          </Label>
+          <Input
+            id="event-thumbnail"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full"
+          />
+        </div>
+        <Button onClick={handleCreateEvent}>Create Event</Button>
       </div>
       <ul className="space-y-4">
         {events.map((event) => (
@@ -108,12 +205,19 @@ const AdminEvents: React.FC = () => {
             <p className="text-sm text-gray-600">
               {new Date(event.date).toLocaleDateString()}
             </p>
+            {event.imageUrl && (
+              <CldImage
+                src={event.imageUrl}
+                alt="Event thumbnail"
+                className="mt-2 w-32 h-32 object-cover"
+              />
+            )}
             <p className="mt-2">{event.description}</p>
             <div className="mt-4 flex space-x-2">
               <Button
                 variant="outline"
                 onClick={() =>
-                  updateEvent(event._id, { ...event, title: "Updated Name" })
+                  updateEvent(event._id, { ...event, title: "Updated Title" })
                 }
               >
                 Update

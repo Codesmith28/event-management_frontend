@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import AdminEvents from "./events";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,19 +13,62 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { Event } from "@/types";
+import { EventFilter } from "@/components/events/EventFilter";
+import { EventList } from "@/components/events/EventList";
 
 export default function AdminDashboard() {
   const { isLoaded, userRole } = useAuth();
   const router = useRouter();
 
+  // Redirect non-admin users to the public dashboard
   useEffect(() => {
     if (isLoaded && userRole !== "admin") {
       router.replace("/dashboard");
     }
   }, [isLoaded, userRole, router]);
+
+  // State for filtering and listing events in the "dashboard" tab
+  const [filters, setFilters] = useState({
+    title: "",
+    category: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  // Fetch events whenever filters change
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.title) params.append("title", filters.title);
+        if (filters.category) params.append("category", filters.category);
+        if (filters.startDate) params.append("startDate", filters.startDate);
+        if (filters.endDate) params.append("endDate", filters.endDate);
+
+        const response = await axios.get("/api/events", { params });
+        setEvents(response.data);
+        setError("");
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        setError("Failed to fetch events");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [filters]);
+
+  // Handle event click (for example, open a modal or navigate to event details)
+  const handleEventClick = (event: Event) => {
+    console.log("Event clicked:", event);
+  };
 
   if (!isLoaded) {
     return (
@@ -58,7 +102,12 @@ export default function AdminDashboard() {
                   View your administration statistics and metrics
                 </CardDescription>
               </CardHeader>
-              <CardContent>{/* Add dashboard metrics here */}</CardContent>
+              <CardContent>
+                <EventFilter filters={filters} setFilters={setFilters} />
+                {loading && <p>Loading events...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+                <EventList events={events} onEventClick={handleEventClick} />
+              </CardContent>
             </Card>
           </TabsContent>
 

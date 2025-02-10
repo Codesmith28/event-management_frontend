@@ -5,7 +5,12 @@ interface FilterProps {
     startDate: string;
     endDate: string;
   };
-  setFilters: (filters: any) => void;
+  setFilters: (filters: {
+    title: string;
+    category: string;
+    startDate: string;
+    endDate: string;
+  }) => void;
 }
 
 export function EventFilter({ filters, setFilters }: FilterProps) {

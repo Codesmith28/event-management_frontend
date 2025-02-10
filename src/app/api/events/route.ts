@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const headersList = headers();
-    const token = headersList.get("authorization");
+    const token = (await headersList).get("authorization");
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/events`,
