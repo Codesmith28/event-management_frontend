@@ -65,6 +65,7 @@ const AdminEvents: React.FC = () => {
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
     date: new Date(),
+    time: "12:00",
     description: "",
     imageUrl: "",
     category: "",
@@ -129,6 +130,7 @@ const AdminEvents: React.FC = () => {
       setNewEvent({
         title: "",
         date: new Date(),
+        time: "12:00",
         description: "",
         imageUrl: "",
         category: "",
@@ -208,6 +210,20 @@ const AdminEvents: React.FC = () => {
               value={(newEvent.date ?? new Date()).toISOString().split("T")[0]}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, date: new Date(e.target.value) })
+              }
+              className="w-full"
+            />
+          </div>
+          <div>
+            <Label htmlFor="event-time" className="mb-1 block">
+              Time
+            </Label>
+            <Input
+              id="event-time"
+              type="time"
+              value={newEvent.time}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, time: e.target.value })
               }
               className="w-full"
             />

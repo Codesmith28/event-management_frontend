@@ -126,6 +126,12 @@ export default function EventPage() {
                 <h3 className="text-xl font-semibold mb-2">Event Details</h3>
                 <div className="space-y-3">
                   <p className="text-gray-600">
+                    <span className="font-semibold">Date:</span> {formattedDate}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-semibold">Time:</span> {event.time}
+                  </p>
+                  <p className="text-gray-600">
                     <span className="font-semibold">Category:</span>{" "}
                     {event.category}
                   </p>

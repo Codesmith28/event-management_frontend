@@ -33,7 +33,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   useEffect(() => {
     const date = new Date(event.date);
-    setFormattedDate(date.toLocaleString());
+    setFormattedDate(date.toLocaleDateString());
   }, [event.date]);
 
   // For guests, visually gray out the card and disable pointer events
@@ -84,6 +84,9 @@ export const EventCard: React.FC<EventCardProps> = ({
         <div className="space-y-2">
           <p className="text-sm text-gray-500">
             <strong>Date:</strong> {formattedDate}
+          </p>
+          <p className="text-sm text-gray-500">
+            <strong>Time:</strong> {event.time}
           </p>
           <p className="text-sm text-gray-500">
             <strong>Location:</strong> {event.location}
