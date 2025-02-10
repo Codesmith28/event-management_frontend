@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,17 +24,24 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<"admin" | "user" | "guest">("guest");
+  const [user, setUser] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Rehydrate auth state from localStorage when mounted
+    // Rehydrate auth state from localStorage
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("userRole");
     if (token && role) {
       setIsAuthenticated(true);
       setUserRole(role as "admin" | "user" | "guest");
+      setUser({ id: "", name: role, email: "" }); // Set basic user info
     }
     setIsLoaded(true);
   }, []);
@@ -49,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("userRole", role);
     setIsAuthenticated(true);
     setUserRole(role);
+    setUser({ id: "", name: role, email: "" });
   };
 
   const logout = () => {
@@ -56,16 +65,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("userRole");
     setIsAuthenticated(false);
     setUserRole("guest");
+    setUser(null);
   };
 
   const guestLogin = () => {
-    setIsAuthenticated(true);
+    localStorage.setItem("userRole", "guest");
+    setIsAuthenticated(false);
     setUserRole("guest");
+    setUser({ id: "guest", name: "Guest", email: "guest@example.com" });
+    router.push("/dashboard");
   };
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user: null, userRole, isLoaded, login, logout, guestLogin }}
+      value={{
+        isAuthenticated,
+        user,
+        userRole,
+        isLoaded,
+        login,
+        logout,
+        guestLogin,
+      }}
     >
       {children}
     </AuthContext.Provider>

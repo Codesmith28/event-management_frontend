@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 export function Navbar() {
-  const { isAuthenticated, userRole, logout, guestLogin } = useAuth();
+  const { isAuthenticated, userRole, logout } = useAuth();
 
   return (
     <nav className="bg-white shadow-sm">
@@ -32,15 +32,9 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost">Login</Button>
-              </Link>
-              {/* Optionally a guest login */}
-              <Button variant="ghost" onClick={guestLogin}>
-                Continue as Guest
-              </Button>
-            </>
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
           )}
         </div>
       </div>
