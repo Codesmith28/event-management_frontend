@@ -13,12 +13,11 @@ interface EventListProps {
 
 export function EventList({
   events,
-  onBookEvent,
   onEventClick,
   readOnly = false,
 }: EventListProps) {
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 p-4">
       {events.map((event) => (
         <div
           key={event._id}
@@ -26,11 +25,6 @@ export function EventList({
         >
           <EventCard
             event={event}
-            onBook={(id) => {
-              if (!readOnly && onBookEvent) {
-                onBookEvent(id);
-              }
-            }}
             onClick={() => {
               if (!readOnly && onEventClick) {
                 onEventClick(event);

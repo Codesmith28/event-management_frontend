@@ -25,7 +25,6 @@ type EventCardProps = {
 export const EventCard: React.FC<EventCardProps> = ({
   event,
   onEdit,
-  onBook,
   onClick,
 }) => {
   // Get user role from auth context
@@ -62,11 +61,11 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   return (
     <Card
-      className={`mb-4 ${cardClassName}`}
+      className={`w-full sm:w-full max-w-sm h-[450px] flex flex-col ${cardClassName}`}
       onClick={() => !isGuest && onClick && onClick(event._id)}
     >
       {event.imageUrl && (
-        <div className="relative h-48">
+        <div className="relative h-40">
           <CldImage
             src={event.imageUrl}
             alt={event.title}
@@ -75,51 +74,41 @@ export const EventCard: React.FC<EventCardProps> = ({
           />
         </div>
       )}
-      <CardHeader>
-        <h2 className="text-xl font-bold">{event.title}</h2>
-        <Badge>{event.category}</Badge>
+      <CardHeader className="p-6">
+        <h2 className="text-xl font-bold line-clamp-1">{event.title}</h2>
+        <Badge className="mt-2">{event.category}</Badge>
       </CardHeader>
-      <CardContent>
-        <p className="mb-2">{event.description}</p>
-        <p className="text-sm text-gray-500">
-          <strong>Date:</strong> {formattedDate}
-        </p>
-        <p className="text-sm text-gray-500">
-          <strong>Location:</strong> {event.location}
-        </p>
-        <p className="text-sm text-gray-500">
-          <strong>Organizer:</strong> {event.organizer.name}
-        </p>
-        <p className="text-sm text-gray-500">
-          <strong>Total Seats:</strong> {event.seatsTotal}
-        </p>
-        <p className="text-sm text-gray-500">
-          <strong>Booked Seats:</strong> {event.bookedSeats}
-        </p>
-        <p className="text-sm text-gray-500">
-          <strong>Attendees:</strong> {event.attendees.length}
-        </p>
-        <p className="text-xs text-gray-400">
-          Created: {new Date(event.createdAt).toLocaleDateString()} | Updated:{" "}
-          {new Date(event.updatedAt).toLocaleDateString()}
-        </p>
+      <CardContent className="p-6 flex-grow">
+        <p className="text-sm mb-4 line-clamp-2">{event.description}</p>
+        <div className="space-y-2">
+          <p className="text-sm text-gray-500">
+            <strong>Date:</strong> {formattedDate}
+          </p>
+          <p className="text-sm text-gray-500">
+            <strong>Location:</strong> {event.location}
+          </p>
+          <p className="text-sm text-gray-500">
+            <strong>Available Seats:</strong>{" "}
+            {seatsAvailable <= 0 ? (
+              <span className="text-red-500 font-semibold">Sold Out</span>
+            ) : (
+              seatsAvailable
+            )}
+          </p>
+        </div>
       </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
+      <CardFooter className="p-6 flex justify-end space-x-2">
         {userRole === "admin" && (
-          <Button variant="outline" onClick={() => onEdit && onEdit(event._id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit && onEdit(event._id)}
+          >
             Edit
           </Button>
         )}
-        {userRole === "user" && (
-          <Button
-            onClick={() => onBook && onBook(event._id)}
-            disabled={seatsAvailable <= 0}
-          >
-            {seatsAvailable <= 0 ? "Sold Out" : "Book Event"}
-          </Button>
-        )}
         {userRole === "guest" && (
-          <span className="text-gray-600 text-sm">Login to Book or Edit</span>
+          <span className="text-gray-600 text-sm">Login to View Details</span>
         )}
       </CardFooter>
     </Card>
