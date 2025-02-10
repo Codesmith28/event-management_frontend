@@ -70,8 +70,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           <CldImage
             src={event.imageUrl}
             alt={event.title}
-            width={100}
-            height={100}
+            fill
             className="object-cover rounded-t-lg"
           />
         </div>
