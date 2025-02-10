@@ -115,12 +115,9 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                       <div className="relative">
                         <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
+                          {...field}
                           placeholder="Search events..."
                           className="pl-8"
-                          value={filters.title}
-                          onChange={(e) =>
-                            setFilters({ ...filters, title: e.target.value })
-                          }
                         />
                       </div>
                     </FormControl>
@@ -137,8 +134,12 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                       Category
                     </FormLabel>
                     <Select
-                      value={filters.category || "all"}
-                      onValueChange={handleCategoryChange}
+                      {...field}
+                      value={field.value || "all"}
+                      onValueChange={(value) => {
+                        field.onChange(value === "all" ? "" : value);
+                        handleCategoryChange(value);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -239,7 +240,7 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                           onSelect={(date) => handleDateChange("endDate", date)}
                           disabled={(date) =>
                             date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                            (filters.startDate &&
+                            (!!filters.startDate &&
                               date < new Date(filters.startDate))
                           }
                           initialFocus

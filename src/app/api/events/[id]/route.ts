@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import socket from "@/lib/socket";
 
 // Ensure your API URL is set
 if (!process.env.NEXT_PUBLIC_API_URL) {
@@ -30,28 +31,43 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const headersList = await headers();
-    const token = headersList.get("authorization");
+    const reqHeaders = headers();
+    const authToken = reqHeaders.get("authorization");
 
+    if (!authToken) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/events/${params.id}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // If you need a Bearer token, uncomment the next line:
-          Authorization: token ? `Bearer ${token}` : "",
+          Authorization: authToken,
         },
         body: JSON.stringify(body),
       }
     );
-    const data = await response.json();
-    return NextResponse.json(data);
+
+    if (!response.ok) {
+      throw new Error("Failed to update event");
+    }
+
+    const updatedEvent = await response.json();
+
+    // Emit socket event for real-time updates
+    socket.emit("eventUpdated", updatedEvent);
+
+    return NextResponse.json(updatedEvent);
   } catch (error) {
-    console.error("PUT /api/events/[id] error:", error);
+    console.error("Error in updateEvent:", error);
     return NextResponse.json(
-      { error: "Failed to update event" },
+      { message: "Failed to update event" },
       { status: 500 }
     );
   }

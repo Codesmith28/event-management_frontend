@@ -53,7 +53,7 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
       time: event?.time || "12:00",
       location: event?.location || "",
       category: event?.category || "",
-      seatsTotal: event?.seatsTotal || 1,
+      seatsTotal: event?.seatsTotal || 100,
       imageUrl: event?.imageUrl || "",
     },
   });
@@ -87,7 +87,7 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
 
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -95,10 +95,11 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save event");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to save event");
       }
 
-      const updatedEvent = await response.json();
+      const savedEvent = await response.json();
 
       toast({
         title: isEditing ? "Event Updated" : "Event Created",
@@ -191,12 +192,15 @@ export function EventForm({ event, onSuccess, isEditing = false }: EventFormProp
                   <FormControl>
                     <select
                       {...field}
+                      value={field.value}
+                      onChange={field.onChange}
                       className="w-full p-2 border rounded-md"
                     >
                       <option value="">Select Category</option>
                       <option value="conference">Conference</option>
                       <option value="workshop">Workshop</option>
                       <option value="seminar">Seminar</option>
+                      <option value="networking">Networking</option>
                       <option value="other">Other</option>
                     </select>
                   </FormControl>
