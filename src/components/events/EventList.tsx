@@ -1,23 +1,25 @@
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Event } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 
 interface EventListProps {
   events: Event[];
   onBookEvent?: (eventId: string) => void;
+  onEventClick?: (event: Event) => void;
+  readOnly?: boolean;
 }
 
-export function EventList({ events, onBookEvent }: EventListProps) {
+export function EventList({
+  events,
+  onBookEvent,
+  onEventClick,
+  readOnly = false,
+}: EventListProps) {
   const { isAuthenticated, userRole } = useAuth();
 
   const getEventStatus = (event: Event) => {
@@ -30,13 +32,24 @@ export function EventList({ events, onBookEvent }: EventListProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-4">
       {events.map((event) => {
         const status = getEventStatus(event);
         const seatsAvailable = event.seatsTotal - event.bookedSeats;
 
         return (
-          <Card key={event._id} className="flex flex-col">
+          <div
+            key={event._id}
+            className={cn(
+              "rounded-lg border p-4 transition-colors",
+              readOnly
+                ? "cursor-not-allowed opacity-60 bg-muted"
+                : "cursor-pointer hover:bg-accent"
+            )}
+            onClick={() => !readOnly && onEventClick?.(event)}
+            role={!readOnly ? "button" : "article"}
+            aria-disabled={readOnly}
+          >
             <div className="relative aspect-video w-full">
               {event.imageUrl ? (
                 <Image
@@ -111,7 +124,7 @@ export function EventList({ events, onBookEvent }: EventListProps) {
                 </Button>
               )}
             </CardFooter>
-          </Card>
+          </div>
         );
       })}
     </div>

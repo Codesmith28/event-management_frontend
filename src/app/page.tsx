@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LandingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userRole } = useAuth();
+
+  const getNavigationPath = () => {
+    if (!isAuthenticated) return "/login";
+    return userRole === "admin" ? "/admin" : "/dashboard";
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -15,13 +20,13 @@ export default function LandingPage() {
       </h1>
       <p className="text-lg mb-8 text-center max-w-2xl">
         SwissMote is your one‐stop solution to manage, create, and attend events
-        seamlessly. Whether you are an admin looking to create and manage events
-        or a user hoping to attend the most exciting ones, our portal offers an
-        intuitive experience for you. Click below to enter the portal.
+        seamlessly.
       </p>
-      <Link href={isAuthenticated ? "/dashboard" : "/login"}>
+      <Link href={getNavigationPath()}>
         <Button className="px-8 py-4 text-xl">
-          {isAuthenticated ? "Enter Portal" : "Login to Enter Portal"}
+          {isAuthenticated
+            ? `Enter ${userRole === "admin" ? "Admin Portal" : "Portal"}`
+            : "Login to Enter Portal"}
         </Button>
       </Link>
     </div>

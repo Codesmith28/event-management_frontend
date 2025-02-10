@@ -1,16 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-
-    // Validate input
-    if (!body.email || !body.password) {
-      return NextResponse.json(
-        { message: "Please provide email and password" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
@@ -19,10 +11,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: body.email,
-          password: body.password,
-        }),
+        body: JSON.stringify(body),
       }
     );
 
@@ -35,9 +24,19 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(data);
+    const res = NextResponse.json({
+      token: data.token,
+      user: data.user,
+    });
+    res.cookies.set("access_token", "YOUR_JWT_TOKEN", {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      sameSite: "strict",
+    });
+    return res;
   } catch (error) {
-    console.error("Login route error:", error);
+    console.log(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

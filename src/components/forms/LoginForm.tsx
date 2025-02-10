@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -27,6 +27,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { login, guestLogin } = useAuth();
@@ -59,18 +60,31 @@ export function LoginForm() {
         throw new Error(result.message || "Login failed");
       }
 
-      // Success - set the token
-      login(result.token);
+      // Set auth state with user role
+      login({
+        token: result.token,
+        role: result.user.role, // Make sure your API returns user role
+      });
 
       toast({
         title: "Success",
         description: "Logged in successfully",
       });
+
+      // Redirect based on user role
+      if (result.user.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Invalid credentials. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Invalid credentials. Please try again.",
       });
       console.error("Login error:", error);
     } finally {

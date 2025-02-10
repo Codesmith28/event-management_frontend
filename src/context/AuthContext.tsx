@@ -1,19 +1,20 @@
-"use client"
+"use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  userRole: string | null;
-  login: (token: string) => void;
+  userRole: "admin" | "user" | "guest";
+  isLoaded: boolean;
+  login: (data: { token: string; role: "admin" | "user" }) => void;
   logout: () => void;
   guestLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  userRole: null,
+  userRole: "guest",
+  isLoaded: false,
   login: () => {},
   logout: () => {},
   guestLogin: () => {},
@@ -21,54 +22,48 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const router = useRouter();
+  const [userRole, setUserRole] = useState<"admin" | "user" | "guest">("guest");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Check if token exists on mount
+    // Rehydrate auth state from localStorage when mounted
     const token = localStorage.getItem("token");
-    if (token) {
+    const role = localStorage.getItem("userRole");
+    if (token && role) {
       setIsAuthenticated(true);
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setUserRole(payload.role);
-      } catch (error) {
-        console.error("Error parsing token:", error);
-        logout();
-      }
+      setUserRole(role as "admin" | "user" | "guest");
     }
+    setIsLoaded(true);
   }, []);
 
-  const login = (token: string) => {
+  const login = ({
+    token,
+    role,
+  }: {
+    token: string;
+    role: "admin" | "user";
+  }) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("userRole", role);
     setIsAuthenticated(true);
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUserRole(payload.role);
-    } catch (error) {
-      console.error("Error parsing token:", error);
-    }
-    router.push("/dashboard");
+    setUserRole(role);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
     setIsAuthenticated(false);
-    setUserRole(null);
-    router.push("/login");
+    setUserRole("guest");
   };
 
   const guestLogin = () => {
-    const guestToken = "guest-token";
-    localStorage.setItem("token", guestToken);
     setIsAuthenticated(true);
     setUserRole("guest");
-    router.push("/dashboard");
   };
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, userRole, login, logout, guestLogin }}
+      value={{ isAuthenticated, userRole, isLoaded, login, logout, guestLogin }}
     >
       {children}
     </AuthContext.Provider>

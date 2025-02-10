@@ -15,7 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
 
 const eventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -30,7 +29,6 @@ type EventFormValues = z.infer<typeof eventSchema>;
 
 export function EventForm() {
   const { toast } = useToast();
-  const router = useRouter();
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -58,8 +56,6 @@ export function EventForm() {
         title: "Event created",
         description: "Your event has been successfully created.",
       });
-
-      router.push("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
