@@ -141,7 +141,9 @@ export default function EventPage() {
                   </p>
                   <p className="text-gray-600">
                     <span className="font-semibold">Organizer:</span>{" "}
-                    {event.organizer.name}
+                    {typeof event.organizer === "string"
+                      ? event.organizer
+                      : event.organizer.name}
                   </p>
                 </div>
               </div>
