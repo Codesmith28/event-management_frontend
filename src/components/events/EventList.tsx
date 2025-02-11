@@ -19,7 +19,7 @@ export function EventList({
   events,
   onEventClick,
   onUpdate,
-  onBookEvent,
+  // onBookEvent,
   readOnly = false,
   loading = false,
 }: EventListProps) {

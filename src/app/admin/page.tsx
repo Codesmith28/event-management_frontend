@@ -75,8 +75,10 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    fetchEvents();
     socket.connect();
 
+    // Add socket event listeners for real-time updates
     socket.on("eventCreated", (newEvent) => {
       setEvents((prev) => [...prev, newEvent]);
     });
@@ -93,13 +95,28 @@ export default function AdminDashboard() {
       setEvents((prev) => prev.filter((event) => event._id !== id));
     });
 
+    socket.on("attendeeUpdate", ({ eventId, count, seatsAvailable }) => {
+      setEvents((prev) =>
+        prev.map((event) =>
+          event._id === eventId
+            ? {
+                ...event,
+                attendees: Array(count).fill("placeholder"),
+                seatsAvailable: seatsAvailable,
+              }
+            : event
+        )
+      );
+    });
+
     return () => {
       socket.off("eventCreated");
       socket.off("eventUpdated");
       socket.off("eventDeleted");
+      socket.off("attendeeUpdate");
       socket.disconnect();
     };
-  }, []);
+  }, [fetchEvents]);
 
   useEffect(() => {
     fetchEvents();
