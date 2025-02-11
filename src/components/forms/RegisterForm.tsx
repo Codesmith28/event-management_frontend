@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -29,7 +29,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
   const { toast } = useToast();
   const { login } = useAuth();
 
@@ -54,13 +54,26 @@ export function RegisterForm() {
       if (!response.ok) throw new Error();
 
       const result = await response.json();
-      login(result.token);
+      
+      // Pass both token and role to login
+      login({
+        token: result.token,
+        role: result.user.role,
+      });
 
       toast({
         title: "Account created",
         description: "You have successfully registered.",
       });
-    } catch (error) {        console.log(error);
+
+      // Redirect based on role
+      if (result.user.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Error",
