@@ -46,36 +46,40 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
-  const fetchEvents = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (filters.title) params.append("title", filters.title);
-      if (filters.category) params.append("category", filters.category);
-      if (filters.startDate) params.append("startDate", filters.startDate);
-      if (filters.endDate) params.append("endDate", filters.endDate);
+  useEffect(() => {
+    const handleSearch = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.title) params.append("title", filters.title);
+        if (filters.category && filters.category !== "all")
+          params.append("category", filters.category);
+        if (filters.startDate) params.append("startDate", filters.startDate);
+        if (filters.endDate) params.append("endDate", filters.endDate);
 
-      const response = await fetch(`/api/events?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch events");
+        const response = await fetch(`/api/events?${params.toString()}`);
+        if (!response.ok) throw new Error("Failed to fetch events");
 
-      const data = await response.json();
-      setEvents(data);
-      setError("");
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
-      setError("Failed to fetch events");
-      toast({
-        title: "Error",
-        description: "Failed to fetch events",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        const data = await response.json();
+        setEvents(data);
+        setError("");
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        setError("Failed to fetch events");
+        toast({
+          title: "Error",
+          description: "Failed to fetch events",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleSearch();
+  }, [filters, toast]);
 
   useEffect(() => {
-    fetchEvents();
     socket.connect();
 
     // Add socket event listeners for real-time updates
@@ -116,11 +120,7 @@ export default function AdminDashboard() {
       socket.off("attendeeUpdate");
       socket.disconnect();
     };
-  }, [fetchEvents]);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [filters]);
+  }, [socket]);
 
   const handleResetFilters = () => {
     setFilters(initialFilters);

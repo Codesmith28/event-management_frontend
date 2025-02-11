@@ -34,6 +34,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useEffect } from "react";
 
 interface FilterProps {
   filters: {
@@ -64,6 +65,11 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
     defaultValues: filters,
   });
 
+  // Update form values when filters change
+  useEffect(() => {
+    form.reset(filters);
+  }, [filters, form]);
+
   const categories = [
     { value: "all", label: "All Categories" },
     { value: "conference", label: "Conference" },
@@ -80,58 +86,67 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
     if (!value) return;
 
     const dateStr = format(value, "yyyy-MM-dd");
-
+    
+    // Update both form and filters
+    form.setValue(field, dateStr);
+    
     if (field === "endDate" && dateStr < filters.startDate) {
-      // If end date is before start date, adjust start date
       setFilters({ ...filters, startDate: dateStr, [field]: dateStr });
-    } else if (
-      field === "startDate" &&
-      dateStr > filters.endDate &&
-      filters.endDate
-    ) {
-      // If start date is after end date, adjust end date
+      form.setValue("startDate", dateStr);
+    } else if (field === "startDate" && dateStr > filters.endDate && filters.endDate) {
       setFilters({ ...filters, endDate: dateStr, [field]: dateStr });
+      form.setValue("endDate", dateStr);
     } else {
       setFilters({ ...filters, [field]: dateStr });
     }
   };
 
   const handleCategoryChange = (value: string) => {
+    form.setValue("category", value);
     setFilters({
       ...filters,
       category: value === "all" ? "" : value,
     });
   };
 
+  const onSubmit = (data: z.infer<typeof filterSchema>) => {
+    setFilters({
+      ...filters,
+      title: data.title,
+      category: data.category === "all" ? "" : data.category,
+      startDate: data.startDate,
+      endDate: data.endDate,
+    });
+  };
+
   return (
     <Card className="mb-6">
-      <CardContent className="pt-3">
-        <Accordion type="single" collapsible defaultValue="filters">
+      <CardContent className="pt-6">
+        <Accordion type="single" collapsible>
           <AccordionItem value="filters">
-            <AccordionTrigger className="text-lg font-semibold">
-              Filter Events
-            </AccordionTrigger>
+            <AccordionTrigger>Search & Filter Events</AccordionTrigger>
             <AccordionContent>
               <Form {...form}>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Search Title
-                          </FormLabel>
+                          <FormLabel>Search by Title</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                {...field}
-                                placeholder="Search events..."
-                                className="pl-8"
-                              />
-                            </div>
+                            <Input
+                              placeholder="Search events..."
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                setFilters({
+                                  ...filters,
+                                  title: e.target.value,
+                                });
+                              }}
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -142,20 +157,16 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Category
-                          </FormLabel>
+                          <FormLabel>Category</FormLabel>
                           <Select
-                            {...field}
-                            value={field.value || "all"}
-                            onValueChange={(value: string) => {
-                              field.onChange(value === "all" ? "" : value);
-                              handleCategoryChange(value);
-                            }}
+                            value={field.value}
+                            onValueChange={handleCategoryChange}
                           >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
                               {categories.map((category) => (
                                 <SelectItem
@@ -277,9 +288,16 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                       )}
                     />
                   </div>
-
                   <div className="flex justify-end space-x-2">
                     <Button
+                      type="submit"
+                      className="flex items-center gap-2"
+                    >
+                      <SearchIcon className="h-4 w-4" />
+                      Search
+                    </Button>
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={onReset}
                       className="flex items-center gap-2"
@@ -288,7 +306,7 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                       Reset Filters
                     </Button>
                   </div>
-                </div>
+                </form>
               </Form>
             </AccordionContent>
           </AccordionItem>

@@ -25,7 +25,7 @@ export default function DashboardPage() {
     try {
       const params = new URLSearchParams();
       if (filters.title) params.append("title", filters.title);
-      if (filters.category) params.append("category", filters.category);
+      if (filters.category && filters.category !== "all") params.append("category", filters.category);
       if (filters.startDate) params.append("startDate", filters.startDate);
       if (filters.endDate) params.append("endDate", filters.endDate);
 
