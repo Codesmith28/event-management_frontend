@@ -148,7 +148,7 @@ export function EventFilter({ filters, setFilters, onReset }: FilterProps) {
                           <Select
                             {...field}
                             value={field.value || "all"}
-                            onValueChange={(value) => {
+                            onValueChange={(value: string) => {
                               field.onChange(value === "all" ? "" : value);
                               handleCategoryChange(value);
                             }}

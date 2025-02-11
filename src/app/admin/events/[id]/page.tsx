@@ -5,12 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Event } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -19,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/forms/EventForm";
-import { socket } from "@/lib/socket";
+import socket from "@/lib/socket";
 
 export default function AdminEventPage() {
   const params = useParams();
@@ -84,10 +79,15 @@ export default function AdminEventPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle className="text-2xl font-bold">{event.title}</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  {event.title}
+                </CardTitle>
                 <Badge className="mt-2">{event.category}</Badge>
               </div>
-              <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(true)}
+              >
                 Edit Event
               </Button>
             </div>
@@ -102,19 +102,33 @@ export default function AdminEventPage() {
                 />
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="font-semibold mb-2">Event Details</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Date:</span> {new Date(event.date).toLocaleDateString()}</p>
-                  <p><span className="font-medium">Time:</span> {event.time}</p>
-                  <p><span className="font-medium">Location:</span> {event.location}</p>
-                  <p><span className="font-medium">Total Seats:</span> {event.seatsTotal}</p>
-                  <p><span className="font-medium">Available Seats:</span> {event.seatsTotal - event.attendees.length}</p>
+                  <p>
+                    <span className="font-medium">Date:</span>{" "}
+                    {new Date(event.date).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <span className="font-medium">Time:</span> {event.time}
+                  </p>
+                  <p>
+                    <span className="font-medium">Location:</span>{" "}
+                    {event.location}
+                  </p>
+                  <p>
+                    <span className="font-medium">Total Seats:</span>{" "}
+                    {event.seatsTotal}
+                  </p>
+                  <p>
+                    <span className="font-medium">Available Seats:</span>{" "}
+                    {event.seatsTotal - event.attendees.length}
+                  </p>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="font-semibold mb-2">Description</h3>
                 <p className="text-gray-600">{event.description}</p>
@@ -122,7 +136,9 @@ export default function AdminEventPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Attendees ({event.attendees.length})</h3>
+              <h3 className="font-semibold mb-2">
+                Attendees ({event.attendees.length})
+              </h3>
               {/* Add attendee management here */}
             </div>
           </CardContent>
@@ -143,4 +159,4 @@ export default function AdminEventPage() {
       </div>
     </div>
   );
-} 
+}

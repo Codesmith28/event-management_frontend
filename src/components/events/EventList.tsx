@@ -10,6 +10,7 @@ interface EventListProps {
   events: Event[];
   onEventClick?: (event: Event) => void;
   onUpdate?: () => void;
+  onBookEvent?: (eventId: string) => Promise<void>;
   readOnly?: boolean;
   loading?: boolean;
 }
@@ -18,6 +19,7 @@ export function EventList({
   events,
   onEventClick,
   onUpdate,
+  onBookEvent,
   readOnly = false,
   loading = false,
 }: EventListProps) {

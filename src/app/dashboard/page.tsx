@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
       const response = await fetch(`/api/events?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch events");
-      
+
       const data = await response.json();
       setEvents(data);
     } catch (error) {
@@ -71,8 +71,8 @@ export default function DashboardPage() {
           event._id === eventId
             ? {
                 ...event,
-                attendees: Array(count).fill('placeholder'), // This maintains the length
-                seatsAvailable: seatsAvailable
+                attendees: Array(count).fill("placeholder"), // This maintains the length
+                seatsAvailable: seatsAvailable,
               }
             : event
         )
@@ -138,7 +138,11 @@ export default function DashboardPage() {
     <div>
       <main className="container mx-auto px-4 py-3">
         <h1 className="text-3xl font-bold mb-8">Event Dashboard</h1>
-        <EventFilter filters={filters} setFilters={setFilters} />
+        <EventFilter
+          filters={filters}
+          setFilters={setFilters}
+          onReset={handleResetFilters}
+        />
         <EventList
           events={events}
           onEventClick={handleEventClick}
