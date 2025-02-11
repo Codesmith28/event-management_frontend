@@ -2,6 +2,16 @@
 
 This is the frontend application for the Event Management System built with Next.js 13+, using the App Router and TypeScript.
 
+## Credentials
+
+- Admin:
+- email: <hello_swsiss@gmail.com>
+- password: #$4j~!!_2PX4,?B
+
+- User:
+- email: <new_user@gmail.com>
+- password: TqvF4k=_n8RZgvV
+
 ## Getting Started
 
 ### Prerequisites
