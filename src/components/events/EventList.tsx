@@ -36,31 +36,33 @@ export function EventList({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 p-4">
-      {eventArray.map((event) => (
-        <div key={event._id}>
-          {isAdmin ? (
-            <AdminEventCard
-              event={event}
-              onUpdate={() => onUpdate && onUpdate()}
-            />
-          ) : (
-            <EventCard
-              event={event}
-              onClick={() => {
-                if (!readOnly && onEventClick) {
-                  onEventClick(event);
-                }
-              }}
-            />
-          )}
-        </div>
-      ))}
-      {eventArray.length === 0 && !loading && (
-        <div className="col-span-full text-center py-8 text-gray-500">
-          No events found
-        </div>
-      )}
+    <div className="container mx-auto px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+        {eventArray.map((event) => (
+          <div key={event._id} className="w-full max-w-sm">
+            {isAdmin ? (
+              <AdminEventCard
+                event={event}
+                onUpdate={() => onUpdate && onUpdate()}
+              />
+            ) : (
+              <EventCard
+                event={event}
+                onClick={() => {
+                  if (!readOnly && onEventClick) {
+                    onEventClick(event);
+                  }
+                }}
+              />
+            )}
+          </div>
+        ))}
+        {eventArray.length === 0 && !loading && (
+          <div className="col-span-full text-center py-8 text-gray-500">
+            No events found
+          </div>
+        )}
+      </div>
     </div>
   );
 }
